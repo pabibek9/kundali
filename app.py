@@ -191,7 +191,12 @@ def generate_kundali():
         return jsonify(report)
         
     except Exception as e:
-        return jsonify({"error": str(e)}), 400
+        error_msg = str(e)
+        if "ephemeris segment only covers" in error_msg:
+            return jsonify({
+                "error": "The date provided falls outside the supported astronomical calculation range (1899-07-29 to 2053-10-09 AD). If you entered a Nepali (BS) date, please ensure you selected the BS calendar type."
+            }), 400
+        return jsonify({"error": error_msg}), 400
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

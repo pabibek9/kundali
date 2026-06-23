@@ -767,6 +767,29 @@
     document.getElementById('kundali-form').addEventListener('submit', function(e) {
         e.preventDefault();
         
+        const calendarType = document.getElementById('calendar_type').value;
+        const dateVal = document.getElementById('date').value;
+        
+        // Simple regex check for YYYY-MM-DD format
+        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+        if (!dateRegex.test(dateVal)) {
+            alert("Please enter the date of birth in YYYY-MM-DD format (e.g., 1995-05-15).");
+            return;
+        }
+
+        const year = parseInt(dateVal.split('-')[0], 10);
+        if (calendarType === 'AD') {
+            if (year < 1899 || year > 2053) {
+                alert("The Gregorian (AD) year must be between 1899 and 2053.\n\nIf you are entering a Nepali BS date (e.g. 2060 or 2080), please change the Calendar dropdown to 'BS (Nepali)'.");
+                return;
+            }
+        } else if (calendarType === 'BS') {
+            if (year < 1956 || year > 2110) {
+                alert("The Nepali (BS) year must be between 1956 and 2110.");
+                return;
+            }
+        }
+
         if(!latInput.value) {
             alert("Please search and select a location, or pick a Nepal district.");
             return;
@@ -774,8 +797,8 @@
 
         const payload = {
             name: document.getElementById('name').value,
-            calendar_type: document.getElementById('calendar_type').value,
-            date: document.getElementById('date').value,
+            calendar_type: calendarType,
+            date: dateVal,
             time: document.getElementById('time').value,
             lat: latInput.value,
             lon: lonInput.value,
