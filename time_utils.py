@@ -27,6 +27,34 @@ def convert_bs_to_ad(date_str):
         return ad_date.strftime("%Y-%m-%d")
     raise ValueError("Invalid date format. Use YYYY-MM-DD")
 
+def parse_time_resilient(time_str):
+    """
+    Resiliently parses time strings in either 12-hour AM/PM format or 24-hour format,
+    handling varying spacing, casing, and zero-padding.
+    """
+    time_str = time_str.strip().lower()
+    
+    # Try parsing 12-hour format with AM/PM
+    if 'am' in time_str or 'pm' in time_str:
+        # Standardize spacing around am/pm (e.g. "5:30am" -> "5:30 am")
+        time_str = time_str.replace('am', ' am').replace('pm', ' pm')
+        time_str = " ".join(time_str.split()) # normalize whitespace
+        
+        for fmt in ("%I:%M %p", "%H:%M %p", "%I:%M%p", "%H:%M%p"):
+            try:
+                return datetime.strptime(time_str, fmt).time()
+            except ValueError:
+                continue
+                
+    # Try parsing 24-hour format
+    for fmt in ("%H:%M", "%I:%M"):
+        try:
+            return datetime.strptime(time_str, fmt).time()
+        except ValueError:
+            continue
+            
+    raise ValueError(f"Time format not recognized: '{time_str}'. Please use HH:MM (24-hour) or HH:MM AM/PM for time.")
+
 def get_utc_time(date_str, time_str, tz_name, calendar_type="AD"):
     """
     Parses local date and time and converts to UTC.
@@ -34,7 +62,15 @@ def get_utc_time(date_str, time_str, tz_name, calendar_type="AD"):
     if calendar_type == "BS":
         date_str = convert_bs_to_ad(date_str)
         
-    local_dt = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
+    # 1. Parse date
+    local_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+    
+    # 2. Parse time resiliently
+    local_time = parse_time_resilient(time_str)
+    
+    # 3. Combine date and time
+    local_dt = datetime.combine(local_date, local_time)
+    
     local_tz = pytz.timezone(tz_name)
     local_dt = local_tz.localize(local_dt)
     utc_dt = local_dt.astimezone(pytz.utc)
