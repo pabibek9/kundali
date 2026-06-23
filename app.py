@@ -1,5 +1,8 @@
 import os
 import time
+import urllib.request
+import urllib.parse
+import json
 from flask import Flask, request, jsonify, render_template
 from time_utils import get_timezone_from_coords, get_utc_time
 from astrology import calculate_kundali
@@ -10,6 +13,71 @@ import math
 
 app = Flask(__name__)
 
+def resilient_geocode(query):
+    """
+    Geocodes a location query using Open-Meteo as the primary geocoder (no rate limits or blocks)
+    and falls back to OSM Nominatim (with email/unique user-agent) if needed.
+    """
+    # 1. Try Open-Meteo Geocoding first (highly resilient, doesn't block Render IPs)
+    results = []
+    try:
+        # Extract the city/main name (Open-Meteo works best with the core city name)
+        search_term = query.split(',')[0].strip()
+        url = f"https://geocoding-api.open-meteo.com/v1/search?name={urllib.parse.quote(search_term)}&count=5&format=json"
+        
+        req = urllib.request.Request(
+            url,
+            headers={'User-Agent': 'pabib_kundali_app/1.0'}
+        )
+        with urllib.request.urlopen(req, timeout=5) as response:
+            data = json.loads(response.read().decode())
+            results = data.get("results", [])
+    except Exception as e:
+        print(f"Open-Meteo geocoding failed: {e}")
+        results = []
+
+    formatted_results = []
+    if results:
+        for item in results:
+            address_parts = [item.get("name")]
+            if item.get("admin1"):
+                address_parts.append(item.get("admin1"))
+            if item.get("country"):
+                address_parts.append(item.get("country"))
+            
+            address = ", ".join(address_parts)
+            formatted_results.append({
+                "address": address,
+                "lat": item["latitude"],
+                "lon": item["longitude"]
+            })
+        return formatted_results
+
+    # 2. Fallback to OSM Nominatim if Open-Meteo fails or returns nothing
+    try:
+        geolocator = Nominatim(
+            user_agent="pabibek_kundali_generator_app_v1",
+            email="pabibek9@gmail.com",
+            timeout=10
+        )
+        for retry in range(3):
+            try:
+                locations = geolocator.geocode(query, exactly_one=False, limit=5)
+                if locations:
+                    for loc in locations:
+                        formatted_results.append({
+                            "address": loc.address,
+                            "lat": loc.latitude,
+                            "lon": loc.longitude
+                        })
+                    return formatted_results
+                break
+            except GeocoderTimedOut:
+                time.sleep(1)
+    except Exception as e:
+        print(f"Nominatim fallback geocoding failed: {e}")
+        
+    return []
 
 @app.route('/')
 def index():
@@ -21,29 +89,8 @@ def search_location():
     if not query:
         return jsonify([])
         
-    geolocator = Nominatim(user_agent="kundali_web_app", timeout=10)
     try:
-        # Get multiple results for the dropdown with retry logic
-        locations = None
-        for retry in range(3):
-            try:
-                locations = geolocator.geocode(query, exactly_one=False, limit=5)
-                break
-            except GeocoderTimedOut:
-                time.sleep(1)
-        else:
-            raise GeocoderTimedOut("OSM Nominatim service timed out after 3 attempts.")
-
-        if not locations:
-            return jsonify([])
-            
-        results = []
-        for loc in locations:
-            results.append({
-                "address": loc.address,
-                "lat": loc.latitude,
-                "lon": loc.longitude
-            })
+        results = resilient_geocode(query)
         return jsonify(results)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -81,30 +128,13 @@ def generate_kundali():
 
     # Geocoding fallback if lat/lon are not provided but a place/location is
     if (not lat or not lon) and place:
-        geolocator = Nominatim(user_agent="kundali_web_app_api", timeout=10)
         try:
-            location = None
-            # Try multiple search strategies for resilient geocoding
-            search_attempts = [
-                place,                    # Exact: "Okhaldhungha"
-                f"{place}, Nepal",        # With country: "Okhaldhungha, Nepal"
-                f"{place}, India",        # With country: "Place, India"
-            ]
-            for attempt in search_attempts:
-                for retry in range(3):
-                    try:
-                        location = geolocator.geocode(attempt)
-                        break
-                    except GeocoderTimedOut:
-                        time.sleep(1)
-                if location:
-                    break
-
-            if location:
-                lat = location.latitude
-                lon = location.longitude
+            results = resilient_geocode(place)
+            if results:
+                lat = results[0]["lat"]
+                lon = results[0]["lon"]
                 if not place_name:
-                    place_name = location.address
+                    place_name = results[0]["address"]
             else:
                 return jsonify({"error": f"Could not find coordinates for place: '{place}'. Try using the correct English spelling or a nearby major city."}), 400
         except Exception as e:
