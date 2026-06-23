@@ -480,7 +480,8 @@
     // Leaflet Map Variables & Setup
     let map, marker;
     function initMap(lat, lon, address) {
-        document.getElementById('map').style.display = 'block';
+        const mapEl = document.getElementById('map');
+        mapEl.style.display = 'block';
         const parsedLat = parseFloat(lat);
         const parsedLon = parseFloat(lon);
 
@@ -504,6 +505,9 @@
                 marker.setLatLng(pos);
                 updateCoordinatesFromMap(pos.lat, pos.lng);
             });
+
+            // Container was hidden (display:none) → Leaflet needs a resize after becoming visible
+            setTimeout(() => { map.invalidateSize(); }, 300);
         } else {
             map.setView([parsedLat, parsedLon], 12);
             marker.setLatLng([parsedLat, parsedLon]);
