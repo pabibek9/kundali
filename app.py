@@ -1,12 +1,15 @@
 import os
+import time
 from flask import Flask, request, jsonify, render_template
 from time_utils import get_timezone_from_coords, get_utc_time
 from astrology import calculate_kundali
 from report import format_kundali_data
 from geopy.geocoders import Nominatim
+from geopy.exc import GeocoderTimedOut
 import math
 
 app = Flask(__name__)
+
 
 @app.route('/')
 def index():
@@ -18,10 +21,19 @@ def search_location():
     if not query:
         return jsonify([])
         
-    geolocator = Nominatim(user_agent="kundali_web_app")
+    geolocator = Nominatim(user_agent="kundali_web_app", timeout=10)
     try:
-        # Get multiple results for the dropdown
-        locations = geolocator.geocode(query, exactly_one=False, limit=5)
+        # Get multiple results for the dropdown with retry logic
+        locations = None
+        for retry in range(3):
+            try:
+                locations = geolocator.geocode(query, exactly_one=False, limit=5)
+                break
+            except GeocoderTimedOut:
+                time.sleep(1)
+        else:
+            raise GeocoderTimedOut("OSM Nominatim service timed out after 3 attempts.")
+
         if not locations:
             return jsonify([])
             
@@ -69,7 +81,7 @@ def generate_kundali():
 
     # Geocoding fallback if lat/lon are not provided but a place/location is
     if (not lat or not lon) and place:
-        geolocator = Nominatim(user_agent="kundali_web_app_api")
+        geolocator = Nominatim(user_agent="kundali_web_app_api", timeout=10)
         try:
             location = None
             # Try multiple search strategies for resilient geocoding
@@ -79,7 +91,12 @@ def generate_kundali():
                 f"{place}, India",        # With country: "Place, India"
             ]
             for attempt in search_attempts:
-                location = geolocator.geocode(attempt)
+                for retry in range(3):
+                    try:
+                        location = geolocator.geocode(attempt)
+                        break
+                    except GeocoderTimedOut:
+                        time.sleep(1)
                 if location:
                     break
 
