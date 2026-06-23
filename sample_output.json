@@ -1,0 +1,154 @@
+{
+    "user_details": {
+        "name": "Sample Person",
+        "date_of_birth": "1990-05-15",
+        "time_of_birth": "14:30",
+        "place_of_birth": "London, Greater London, England, United Kingdom",
+        "latitude": 51.5074456,
+        "longitude": -0.1277653,
+        "timezone": "Europe/London"
+    },
+    "ascendant": {
+        "sign": "Virgo",
+        "degree": 14.28,
+        "longitude": 164.28
+    },
+    "planetary_positions": {
+        "Sun": {
+            "sign": "Taurus",
+            "degree": 0.35,
+            "is_retrograde": false,
+            "longitude": 30.35
+        },
+        "Moon": {
+            "sign": "Capricorn",
+            "degree": 19.50,
+            "is_retrograde": false,
+            "longitude": 289.50
+        },
+        "Mars": {
+            "sign": "Aquarius",
+            "degree": 11.23,
+            "is_retrograde": false,
+            "longitude": 311.23
+        },
+        "Mercury": {
+            "sign": "Taurus",
+            "degree": 20.15,
+            "is_retrograde": false,
+            "longitude": 50.15
+        },
+        "Jupiter": {
+            "sign": "Gemini",
+            "degree": 15.42,
+            "is_retrograde": false,
+            "longitude": 75.42
+        },
+        "Venus": {
+            "sign": "Pisces",
+            "degree": 25.10,
+            "is_retrograde": false,
+            "longitude": 355.10
+        },
+        "Saturn": {
+            "sign": "Sagittarius",
+            "degree": 1.15,
+            "is_retrograde": true,
+            "longitude": 241.15
+        },
+        "Rahu": {
+            "sign": "Capricorn",
+            "degree": 14.50,
+            "is_retrograde": true,
+            "longitude": 284.50
+        },
+        "Ketu": {
+            "sign": "Cancer",
+            "degree": 14.50,
+            "is_retrograde": true,
+            "longitude": 104.50
+        }
+    },
+    "houses": {
+        "House_1": {
+            "sign": "Virgo",
+            "degree": 14.28,
+            "longitude": 164.28
+        },
+        "House_2": {
+            "sign": "Libra",
+            "degree": 11.05,
+            "longitude": 191.05
+        },
+        "House_3": {
+            "sign": "Scorpio",
+            "degree": 12.18,
+            "longitude": 222.18
+        },
+        "House_4": {
+            "sign": "Sagittarius",
+            "degree": 15.30,
+            "longitude": 255.30
+        },
+        "House_5": {
+            "sign": "Capricorn",
+            "degree": 18.45,
+            "longitude": 288.45
+        },
+        "House_6": {
+            "sign": "Aquarius",
+            "degree": 19.12,
+            "longitude": 319.12
+        },
+        "House_7": {
+            "sign": "Pisces",
+            "degree": 14.28,
+            "longitude": 344.28
+        },
+        "House_8": {
+            "sign": "Aries",
+            "degree": 11.05,
+            "longitude": 11.05
+        },
+        "House_9": {
+            "sign": "Taurus",
+            "degree": 12.18,
+            "longitude": 42.18
+        },
+        "House_10": {
+            "sign": "Gemini",
+            "degree": 15.30,
+            "longitude": 75.30
+        },
+        "House_11": {
+            "sign": "Cancer",
+            "degree": 18.45,
+            "longitude": 108.45
+        },
+        "House_12": {
+            "sign": "Leo",
+            "degree": 19.12,
+            "longitude": 139.12
+        }
+    },
+    "aspects": [
+        {
+            "planet1": "Sun",
+            "planet2": "Saturn",
+            "aspect": "Opposition",
+            "exactness_diff": 0.8
+        },
+        {
+            "planet1": "Moon",
+            "planet2": "Rahu",
+            "aspect": "Conjunction",
+            "exactness_diff": 5.0
+        },
+        {
+            "planet1": "Mars",
+            "planet2": "Saturn",
+            "aspect": "Sextile",
+            "exactness_diff": 2.08
+        }
+    ]
+}

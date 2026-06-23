@@ -1,0 +1,8 @@
+ephem
+skyfield
+geopy
+timezonefinder
+pytz
+Flask
+nepali-datetime
+gunicorn
