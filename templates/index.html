@@ -630,38 +630,62 @@
         triggerGeocoding(this.value);
     });
 
-    // Nepal Location Selector Logic
+    // Nepal Location Selector Logic — coordinates hardcoded for instant, 100% reliable lookup
     const nepalLocations = {
-        "Koshi Province": [
-            "Bhojpur", "Dhankuta", "Ilam", "Jhapa", "Khotang", "Morang", 
-            "Okhaldhunga", "Panchthar", "Sankhuwasabha", "Solukhumbu", 
-            "Sunsari", "Taplejung", "Terhathum", "Udayapur"
-        ],
-        "Madhesh Province": [
-            "Bara", "Dhanusha", "Mahottari", "Parsa", "Rautahat", 
-            "Saptari", "Sarlahi", "Siraha"
-        ],
-        "Bagmati Province": [
-            "Bhaktapur", "Chitwan", "Dhading", "Dolakha", "Kathmandu", 
-            "Kavrepalanchok", "Lalitpur", "Makwanpur", "Nuwakot", 
-            "Ramechhap", "Rasuwa", "Sindhuli", "Sindhupalchok"
-        ],
-        "Gandaki Province": [
-            "Baglung", "Gorkha", "Kaski", "Lamjung", "Manang", "Mustang", 
-            "Myagdi", "Nawalpur", "Parbat", "Syangja", "Tanahun"
-        ],
-        "Lumbini Province": [
-            "Arghakhanchi", "Banke", "Bardiya", "Dang", "Gulmi", "Kapilvastu", 
-            "Parasi", "Palpa", "Pyuthan", "Rolpa", "Rukum East", "Rupandehi"
-        ],
-        "Karnali Province": [
-            "Dailekh", "Dolpa", "Humla", "Jajarkot", "Jumla", "Kalikot", 
-            "Mugu", "Rukum West", "Salyan", "Surkhet"
-        ],
-        "Sudurpashchim Province": [
-            "Achham", "Baitadi", "Bajhang", "Bajura", "Dadeldhura", 
-            "Darchula", "Doti", "Kailali", "Kanchanpur"
-        ]
+        "Koshi Province": {
+            "Bhojpur": {lat: 27.1765, lon: 87.0509}, "Dhankuta": {lat: 26.9842, lon: 87.3444},
+            "Ilam": {lat: 26.9102, lon: 87.9264}, "Jhapa": {lat: 26.6394, lon: 87.8942},
+            "Khotang": {lat: 27.0123, lon: 86.8486}, "Morang": {lat: 26.6683, lon: 87.4609},
+            "Okhaldhunga": {lat: 27.3163, lon: 86.5015}, "Panchthar": {lat: 27.1323, lon: 87.7806},
+            "Sankhuwasabha": {lat: 27.3702, lon: 87.2301}, "Solukhumbu": {lat: 27.7909, lon: 86.6606},
+            "Sunsari": {lat: 26.6556, lon: 87.1699}, "Taplejung": {lat: 27.3519, lon: 87.6709},
+            "Terhathum": {lat: 27.0771, lon: 87.5572}, "Udayapur": {lat: 26.9293, lon: 86.5211}
+        },
+        "Madhesh Province": {
+            "Bara": {lat: 27.0667, lon: 85.0000}, "Dhanusha": {lat: 26.8065, lon: 85.9266},
+            "Mahottari": {lat: 26.7657, lon: 85.7685}, "Parsa": {lat: 27.0733, lon: 84.8272},
+            "Rautahat": {lat: 27.0030, lon: 85.2814}, "Saptari": {lat: 26.6407, lon: 86.6833},
+            "Sarlahi": {lat: 26.8541, lon: 85.5742}, "Siraha": {lat: 26.6546, lon: 86.2013}
+        },
+        "Bagmati Province": {
+            "Bhaktapur": {lat: 27.6710, lon: 85.4298}, "Chitwan": {lat: 27.5291, lon: 84.3542},
+            "Dhading": {lat: 27.8717, lon: 84.9317}, "Dolakha": {lat: 27.7776, lon: 86.0726},
+            "Kathmandu": {lat: 27.7172, lon: 85.3240}, "Kavrepalanchok": {lat: 27.5450, lon: 85.5562},
+            "Lalitpur": {lat: 27.6588, lon: 85.3247}, "Makwanpur": {lat: 27.4167, lon: 85.0333},
+            "Nuwakot": {lat: 27.9088, lon: 85.1645}, "Ramechhap": {lat: 27.3272, lon: 86.0884},
+            "Rasuwa": {lat: 28.0833, lon: 85.2833}, "Sindhuli": {lat: 27.2569, lon: 85.9733},
+            "Sindhupalchok": {lat: 27.9530, lon: 85.6839}
+        },
+        "Gandaki Province": {
+            "Baglung": {lat: 28.2719, lon: 83.5900}, "Gorkha": {lat: 28.3829, lon: 84.6286},
+            "Kaski": {lat: 28.2096, lon: 83.9856}, "Lamjung": {lat: 28.2936, lon: 84.3542},
+            "Manang": {lat: 28.6660, lon: 84.0167}, "Mustang": {lat: 28.9985, lon: 83.8473},
+            "Myagdi": {lat: 28.3667, lon: 83.5000}, "Nawalpur": {lat: 27.8000, lon: 84.1000},
+            "Parbat": {lat: 28.2200, lon: 83.7100}, "Syangja": {lat: 28.0833, lon: 83.8667},
+            "Tanahun": {lat: 27.9394, lon: 84.2273}
+        },
+        "Lumbini Province": {
+            "Arghakhanchi": {lat: 27.9500, lon: 83.1500}, "Banke": {lat: 28.0500, lon: 81.6000},
+            "Bardiya": {lat: 28.3400, lon: 81.3200}, "Dang": {lat: 27.8600, lon: 82.3000},
+            "Gulmi": {lat: 28.0833, lon: 83.2667}, "Kapilvastu": {lat: 27.5700, lon: 83.0500},
+            "Parasi": {lat: 27.5000, lon: 83.5000}, "Palpa": {lat: 27.8667, lon: 83.5333},
+            "Pyuthan": {lat: 28.1000, lon: 82.8667}, "Rolpa": {lat: 28.3667, lon: 82.6500},
+            "Rukum East": {lat: 28.6000, lon: 82.5500}, "Rupandehi": {lat: 27.5167, lon: 83.4167}
+        },
+        "Karnali Province": {
+            "Dailekh": {lat: 28.8500, lon: 81.7167}, "Dolpa": {lat: 29.0000, lon: 82.8667},
+            "Humla": {lat: 29.9700, lon: 81.9000}, "Jajarkot": {lat: 28.7000, lon: 82.2000},
+            "Jumla": {lat: 29.2747, lon: 82.1838}, "Kalikot": {lat: 29.1333, lon: 81.6167},
+            "Mugu": {lat: 29.5000, lon: 82.0833}, "Rukum West": {lat: 28.5833, lon: 82.5000},
+            "Salyan": {lat: 28.3833, lon: 82.1667}, "Surkhet": {lat: 28.5986, lon: 81.6350}
+        },
+        "Sudurpashchim Province": {
+            "Achham": {lat: 29.0500, lon: 81.2500}, "Baitadi": {lat: 29.5229, lon: 80.4179},
+            "Bajhang": {lat: 29.5400, lon: 81.1900}, "Bajura": {lat: 29.3500, lon: 81.3500},
+            "Dadeldhura": {lat: 29.3000, lon: 80.5833}, "Darchula": {lat: 29.8500, lon: 80.5500},
+            "Doti": {lat: 29.2667, lon: 80.9500}, "Kailali": {lat: 28.7333, lon: 80.5667},
+            "Kanchanpur": {lat: 28.8500, lon: 80.3167}
+        }
     };
 
     const countrySelect = document.getElementById('country_select');
@@ -715,7 +739,7 @@
         districtSelect.innerHTML = '<option value="">Choose District...</option>';
         if (province && nepalLocations[province]) {
             districtSelect.removeAttribute('disabled');
-            nepalLocations[province].forEach(dist => {
+            Object.keys(nepalLocations[province]).forEach(dist => {
                 const opt = document.createElement('option');
                 opt.value = dist;
                 opt.textContent = dist;
@@ -726,42 +750,21 @@
         }
     });
 
-    // Fetch coordinates when district is selected
+    // Set coordinates INSTANTLY when district is selected (no API call needed)
     districtSelect.addEventListener('change', function() {
         const district = this.value;
         const province = provinceSelect.value;
         if (!district || !province) return;
 
-        const searchQuery = `${district}, ${province}, Nepal`;
-        
-        fetch(`/api/search_location?q=${encodeURIComponent(searchQuery)}`)
-            .then(res => res.json())
-            .then(data => {
-                if (data.length > 0) {
-                    const item = data[0];
-                    latInput.value = item.lat;
-                    lonInput.value = item.lon;
-                    placeNameInput.value = item.address;
-                    initMap(item.lat, item.lon, item.address);
-                } else {
-                    // Fallback: try district + Nepal
-                    fetch(`/api/search_location?q=${encodeURIComponent(district + ', Nepal')}`)
-                        .then(res => res.json())
-                        .then(fallbackData => {
-                            if (fallbackData.length > 0) {
-                                const item = fallbackData[0];
-                                latInput.value = item.lat;
-                                lonInput.value = item.lon;
-                                placeNameInput.value = item.address;
-                                initMap(item.lat, item.lon, item.address);
-                            }
-                        });
-                }
-            })
-            .catch(err => {
-                console.error("Geocoding failed for district:", err);
-            });
+        const coords = nepalLocations[province]?.[district];
+        if (coords) {
+            latInput.value = coords.lat;
+            lonInput.value = coords.lon;
+            placeNameInput.value = `${district}, ${province}, Nepal`;
+            initMap(coords.lat, coords.lon, `${district}, ${province}, Nepal`);
+        }
     });
+
 
     // Form Submission
     document.getElementById('kundali-form').addEventListener('submit', function(e) {
