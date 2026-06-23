@@ -1,13 +1,10 @@
 import os
 import time
-import urllib.request
-import urllib.parse
-import json
 from flask import Flask, request, jsonify, render_template
 from time_utils import get_timezone_from_coords, get_utc_time
 from astrology import calculate_kundali
 from report import format_kundali_data
-from geopy.geocoders import Nominatim
+from geopy.geocoders import Nominatim, Photon
 from geopy.exc import GeocoderTimedOut
 import math
 
@@ -15,48 +12,30 @@ app = Flask(__name__)
 
 def resilient_geocode(query):
     """
-    Geocodes a location query using Open-Meteo as the primary geocoder (no rate limits or blocks)
-    and falls back to OSM Nominatim (with email/unique user-agent) if needed.
+    Geocodes a location query using Photon (Komoot OSM search) as the primary geocoder
+    (no rate limits or blocks) and falls back to OSM Nominatim (with email/unique user-agent) if needed.
     """
-    # 1. Try Open-Meteo Geocoding first (highly resilient, doesn't block Render IPs)
-    results = []
-    try:
-        # Extract the city/main name (Open-Meteo works best with the core city name)
-        search_term = query.split(',')[0].strip()
-        url = f"https://geocoding-api.open-meteo.com/v1/search?name={urllib.parse.quote(search_term)}&count=5&format=json"
-        
-        req = urllib.request.Request(
-            url,
-            headers={'User-Agent': 'pabib_kundali_app/1.0'}
-        )
-        with urllib.request.urlopen(req, timeout=5) as response:
-            data = json.loads(response.read().decode())
-            results = data.get("results", [])
-    except Exception as e:
-        print(f"Open-Meteo geocoding failed: {e}")
-        results = []
-
     formatted_results = []
-    if results:
-        for item in results:
-            address_parts = [item.get("name")]
-            if item.get("admin1"):
-                address_parts.append(item.get("admin1"))
-            if item.get("country"):
-                address_parts.append(item.get("country"))
-            
-            address = ", ".join(address_parts)
-            formatted_results.append({
-                "address": address,
-                "lat": item["latitude"],
-                "lon": item["longitude"]
-            })
-        return formatted_results
-
-    # 2. Fallback to OSM Nominatim if Open-Meteo fails or returns nothing
+    
+    # 1. Try Photon first (highly resilient, fast, doesn't block Render IPs)
+    try:
+        geolocator = Photon(user_agent="pabib_kundali_app", timeout=10)
+        locations = geolocator.geocode(query, exactly_one=False)
+        if locations:
+            for loc in locations[:5]:
+                formatted_results.append({
+                    "address": loc.address,
+                    "lat": loc.latitude,
+                    "lon": loc.longitude
+                })
+            return formatted_results
+    except Exception as e:
+        print(f"Photon geocoding failed: {e}")
+        
+    # 2. Fallback to OSM Nominatim if Photon fails or returns nothing
     try:
         geolocator = Nominatim(
-            user_agent="pabibek_kundali_generator_app_v1",
+            user_agent="pabibek_kundali_generator_app_v2",
             email="pabibek9@gmail.com",
             timeout=10
         )
