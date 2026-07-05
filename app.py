@@ -64,7 +64,8 @@ NEPAL_DISTRICT_COORDS = {
 }
 
 def local_nepal_lookup(query):
-    """Try to match a query against known Nepal district/city names. Returns (lat, lon, address) or None."""
+    """Try to match a query against known Nepal district/city names resiliently (handles typos like 'okhaldhungha')."""
+    import difflib
     q = query.lower().strip()
     # Strip common suffixes like ", nepal", ", province" etc.
     for suffix in [", nepal", " nepal", " district", " municipality"]:
@@ -77,6 +78,13 @@ def local_nepal_lookup(query):
         if part in NEPAL_DISTRICT_COORDS:
             lat, lon = NEPAL_DISTRICT_COORDS[part]
             return lat, lon, f"{part.title()}, Nepal"
+        
+        # Fuzzy match to handle common misspellings (e.g. okhaldhungha -> okhaldhunga)
+        matches = difflib.get_close_matches(part, NEPAL_DISTRICT_COORDS.keys(), n=1, cutoff=0.75)
+        if matches:
+            matched_key = matches[0]
+            lat, lon = NEPAL_DISTRICT_COORDS[matched_key]
+            return lat, lon, f"{matched_key.title()}, Nepal"
     return None
 
 

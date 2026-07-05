@@ -357,7 +357,8 @@ def calculate_kundali(utc_dt, lat, lon):
     
     # Lahiri Ayanamsa polynomial (more accurate than linear):
     # Based on Newcomb's precession with nutation correction
-    ayanamsa = 23.85056 + (50.27846 / 3600.0) * T + (0.0111 / 3600.0) * T * T
+    # Note: precession coefficient converted to per-century rate (multiplied by 100)
+    ayanamsa = 23.85056 + (5027.846 / 3600.0) * T + (1.11 / 3600.0) * T * T
     
     planets = {
         "Sun": eph['sun'],
@@ -380,7 +381,8 @@ def calculate_kundali(utc_dt, lat, lon):
     observer = earth + Topos(latitude_degrees=lat, longitude_degrees=lon)
     
     for name, planet_obj in planets.items():
-        astrometric = observer.at(t).observe(planet_obj)
+        # Astrological calculations use geocentric coordinates (viewed from earth's center)
+        astrometric = earth.at(t).observe(planet_obj)
         apparent = astrometric.apparent()
         # Get Ecliptic Coordinates (Geocentric)
         lat_ecl, lon_ecl, distance = apparent.ecliptic_latlon()
@@ -393,7 +395,7 @@ def calculate_kundali(utc_dt, lat, lon):
         # Detect retrograde (actual velocity check) — skip for Sun and Moon (never retrograde)
         is_retro = False
         if name not in ("Sun", "Moon"):
-            is_retro = detect_retrograde(observer, t, planet_obj, ts)
+            is_retro = detect_retrograde(earth, t, planet_obj, ts)
         
         kundali_data["planets"][name] = {
             "longitude": sid_lon,

@@ -42,4 +42,4 @@ print("\nDasha Periods:")
 for d in data["dasha"]["dashas"]:
     print(f"  {d['lord']:8s}: {d['start']} to {d['end']} ({d['years']:.2f} years)")
 
-print("\nTEST PASSED ✓")
+print("\nTEST PASSED [OK]")
