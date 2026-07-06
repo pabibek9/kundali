@@ -63,6 +63,95 @@ NEPAL_DISTRICT_COORDS = {
     "rajbiraj": (26.5411, 86.7356), "tikapur": (28.5269, 81.1192),
 }
 
+# Country capitals with coordinates for geocoding fallbacks
+COUNTRY_CAPITALS = {
+    "nepal": (27.7172, 85.3240, "Kathmandu, Nepal"),
+    "india": (28.6139, 77.2090, "New Delhi, India"),
+    "new zealand": (-41.2865, 174.7762, "Wellington, New Zealand"),
+    "nz": (-41.2865, 174.7762, "Wellington, New Zealand"),
+    "australia": (-35.2809, 149.1300, "Canberra, Australia"),
+    "united kingdom": (51.5074, -0.1278, "London, United Kingdom"),
+    "uk": (51.5074, -0.1278, "London, United Kingdom"),
+    "great britain": (51.5074, -0.1278, "London, United Kingdom"),
+    "united states": (38.9072, -77.0369, "Washington D.C., United States"),
+    "usa": (38.9072, -77.0369, "Washington D.C., United States"),
+    "us": (38.9072, -77.0369, "Washington D.C., United States"),
+    "canada": (45.4215, -75.6972, "Ottawa, Canada"),
+    "germany": (52.5200, 13.4050, "Berlin, Germany"),
+    "france": (48.8566, 2.3522, "Paris, France"),
+    "japan": (35.6762, 139.6503, "Tokyo, Japan"),
+    "china": (39.9042, 116.4074, "Beijing, China"),
+    "uae": (24.4539, 54.3773, "Abu Dhabi, United Arab Emirates"),
+    "united arab emirates": (24.4539, 54.3773, "Abu Dhabi, United Arab Emirates"),
+    "dubai": (25.2048, 55.2708, "Dubai, United Arab Emirates"),
+    "singapore": (1.3521, 103.8198, "Singapore"),
+    "bangladesh": (23.8103, 90.4125, "Dhaka, Bangladesh"),
+    "pakistan": (33.6844, 73.0479, "Islamabad, Pakistan"),
+    "sri lanka": (6.9271, 79.8612, "Colombo, Sri Lanka"),
+    "bhutan": (27.4728, 89.6377, "Thimphu, Bhutan"),
+    "maldives": (4.1755, 73.5093, "Male, Maldives"),
+    "malaysia": (3.1390, 101.6869, "Kuala Lumpur, Malaysia"),
+    "thailand": (13.7563, 100.5018, "Bangkok, Thailand"),
+    "qatar": (25.2854, 51.5310, "Doha, Qatar"),
+    "saudi arabia": (24.7136, 46.6753, "Riyadh, Saudi Arabia"),
+    "kuwait": (29.3759, 47.9774, "Kuwait City, Kuwait"),
+    "bahrain": (26.2285, 50.5860, "Manama, Bahrain"),
+    "oman": (23.5859, 58.4059, "Muscat, Oman"),
+    "netherlands": (52.3676, 4.9041, "Amsterdam, Netherlands"),
+    "switzerland": (46.9480, 7.4474, "Bern, Switzerland"),
+    "italy": (41.9028, 12.4964, "Rome, Italy"),
+    "spain": (40.4168, -3.7038, "Madrid, Spain"),
+    "portugal": (38.7223, -9.1393, "Lisbon, Portugal"),
+    "russia": (55.7558, 37.6173, "Moscow, Russia"),
+    "south korea": (37.5665, 126.9780, "Seoul, South Korea"),
+    "brazil": (-15.7975, -47.8919, "Brasilia, Brazil"),
+    "south africa": (-25.7479, 28.2293, "Pretoria, South Africa"),
+    "turkey": (39.9334, 32.8597, "Ankara, Turkey"),
+    "indonesia": (-6.2088, 106.8456, "Jakarta, Indonesia"),
+    "philippines": (14.5995, 120.9842, "Manila, Philippines"),
+    "vietnam": (21.0285, 105.8542, "Hanoi, Vietnam"),
+    "poland": (52.2297, 21.0122, "Warsaw, Poland"),
+    "sweden": (59.3293, 18.0686, "Stockholm, Sweden"),
+    "norway": (59.9139, 10.7522, "Oslo, Norway"),
+    "denmark": (55.6761, 12.5683, "Copenhagen, Denmark"),
+    "finland": (60.1699, 24.9384, "Helsinki, Finland"),
+    "ireland": (53.3498, -6.2603, "Dublin, Ireland"),
+    "austria": (48.2082, 16.3738, "Vienna, Austria"),
+    "belgium": (50.8503, 4.3517, "Brussels, Belgium"),
+    "greece": (37.9838, 23.7275, "Athens, Greece"),
+    "mexico": (19.4326, -99.1332, "Mexico City, Mexico"),
+    "argentina": (-34.6037, -58.3816, "Buenos Aires, Argentina"),
+    "chile": (-33.4489, -70.6693, "Santiago, Chile"),
+    "colombia": (4.7110, -74.0721, "Bogota, Colombia"),
+    "egypt": (30.0444, 31.2357, "Cairo, Egypt"),
+    "nigeria": (9.0579, 7.4951, "Abuja, Nigeria"),
+    "kenya": (-1.2921, 36.8219, "Nairobi, Kenya"),
+    "israel": (31.7683, 35.2137, "Jerusalem, Israel"),
+    "newzealand": (-41.2865, 174.7762, "Wellington, New Zealand"),
+}
+
+def fallback_country_capital(query):
+    """
+    Looks for a country name or abbreviation in the query and returns the capital's coordinates and name.
+    """
+    if not query:
+        return None
+    import re
+    q = query.lower().strip()
+    
+    # 1. Check multi-word country names first
+    for country, data in COUNTRY_CAPITALS.items():
+        if len(country.split()) > 1 and country in q:
+            return data
+            
+    # 2. Tokenize and check single words / abbreviations
+    words = re.findall(r'[a-z0-9]+', q)
+    for country, data in COUNTRY_CAPITALS.items():
+        if country in words:
+            return data
+            
+    return None
+
 def local_nepal_lookup(query):
     """Try to match a query against known Nepal district/city names resiliently (handles typos like 'okhaldhungha')."""
     import difflib
@@ -152,11 +241,24 @@ def search_location():
         if nepal_result:
             lat, lon, addr = nepal_result
             return jsonify([{"address": addr, "lat": lat, "lon": lon}])
+            
         # Fall back to external geocoding
         results = resilient_geocode(query)
+        
+        # If no results found, try country capital fallback
+        if not results:
+            capital_result = fallback_country_capital(query)
+            if capital_result:
+                lat, lon, addr = capital_result
+                results = [{"address": f"{addr} (Approximate)", "lat": lat, "lon": lon}]
+            else:
+                # Ultimate fallback to capital of Nepal
+                results = [{"address": "Kathmandu, Nepal (Approximate)", "lat": 27.7172, "lon": 85.3240}]
+                
         return jsonify(results)
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"Error during location search: {e}")
+        return jsonify({"error": "server was unable to process"}), 500
 
 # API key from environment variable (falls back to default if not set)
 VALID_API_KEY = os.environ.get("API_KEY", "sk-kundali-7f2a8c9d0b5e43")
@@ -191,15 +293,15 @@ def generate_kundali():
 
     # Geocoding fallback if lat/lon are not provided but a place/location is
     if (not lat or not lon) and place:
-        # 1. Check hardcoded Nepal district/city lookup first (instant, no network call)
-        nepal_result = local_nepal_lookup(place)
-        if nepal_result:
-            lat, lon, addr = nepal_result
-            if not place_name:
-                place_name = addr
-        else:
-            # 2. Fall back to external geocoding APIs
-            try:
+        try:
+            # 1. Check hardcoded Nepal district/city lookup first (instant, no network call)
+            nepal_result = local_nepal_lookup(place)
+            if nepal_result:
+                lat, lon, addr = nepal_result
+                if not place_name:
+                    place_name = addr
+            else:
+                # 2. Fall back to external geocoding APIs
                 results = resilient_geocode(place)
                 if results:
                     lat = results[0]["lat"]
@@ -207,9 +309,23 @@ def generate_kundali():
                     if not place_name:
                         place_name = results[0]["address"]
                 else:
-                    return jsonify({"error": f"Could not find coordinates for place: '{place}'. Try using the correct English spelling or a nearby major city."}), 400
-            except Exception as e:
-                return jsonify({"error": f"Geocoding service error: {str(e)}"}), 500
+                    # 3. Fall back to country capital
+                    capital_result = fallback_country_capital(place)
+                    if capital_result:
+                        lat, lon, addr = capital_result
+                        if not place_name:
+                            place_name = f"{addr} (Approximate)"
+                    else:
+                        # 4. Ultimate fallback to Kathmandu, Nepal
+                        lat, lon, addr = 27.7172, 85.3240, "Kathmandu, Nepal"
+                        if not place_name:
+                            place_name = "Kathmandu, Nepal (Approximate)"
+        except Exception as e:
+            print(f"Error resolving location coordinates: {e}")
+            # Secure fallback to Kathmandu coordinates
+            lat, lon = 27.7172, 85.3240
+            if not place_name:
+                place_name = "Kathmandu, Nepal (Approximate)"
 
     if not place_name:
         place_name = f"Lat: {lat}, Lon: {lon}" if (lat and lon) else ""
@@ -262,12 +378,8 @@ def generate_kundali():
         return jsonify(report)
         
     except Exception as e:
-        error_msg = str(e)
-        if "ephemeris segment only covers" in error_msg:
-            return jsonify({
-                "error": "The date provided falls outside the supported astronomical calculation range (1899-07-29 to 2053-10-09 AD). If you entered a Nepali (BS) date, please ensure you selected the BS calendar type."
-            }), 400
-        return jsonify({"error": error_msg}), 400
+        print(f"Exception during generate_kundali execution: {e}")
+        return jsonify({"error": "server was unable to process"}), 400
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
