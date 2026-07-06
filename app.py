@@ -258,7 +258,7 @@ def search_location():
         return jsonify(results)
     except Exception as e:
         print(f"Error during location search: {e}")
-        return jsonify({"error": "server was unable to process"}), 500
+        return jsonify({"error": "server was unable to process"}), 200
 
 # API key from environment variable (falls back to default if not set)
 VALID_API_KEY = os.environ.get("API_KEY", "sk-kundali-7f2a8c9d0b5e43")
@@ -280,7 +280,7 @@ def generate_kundali():
         or (data.get("api_key") if data else None)
     )
     if provided_key != VALID_API_KEY:
-        return jsonify({"error": "Unauthorized: Invalid or missing API key"}), 401
+        return jsonify({"error": "server was unable to process"}), 200
 
     name = data.get('name')
     date_str = data.get('date')
@@ -331,14 +331,14 @@ def generate_kundali():
         place_name = f"Lat: {lat}, Lon: {lon}" if (lat and lon) else ""
 
     if not all([name, date_str, time_str, lat, lon]):
-        return jsonify({"error": "Missing required fields (must provide either 'lat' and 'lon', or 'place'/'location')"}), 400
+        return jsonify({"error": "server was unable to process"}), 200
         
     try:
         lat = float(lat)
         lon = float(lon)
         tz_name = get_timezone_from_coords(lat, lon)
         if not tz_name:
-            return jsonify({"error": "Could not determine timezone for the selected location."}), 400
+            return jsonify({"error": "server was unable to process"}), 200
             
         utc_dt, actual_ad_date = get_utc_time(date_str, time_str, tz_name, calendar_type)
         kundali_data = calculate_kundali(utc_dt, lat, lon)
@@ -379,7 +379,7 @@ def generate_kundali():
         
     except Exception as e:
         print(f"Exception during generate_kundali execution: {e}")
-        return jsonify({"error": "server was unable to process"}), 400
+        return jsonify({"error": "server was unable to process"}), 200
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
